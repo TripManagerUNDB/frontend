@@ -79,9 +79,6 @@ export default function Home() {
                 </svg>
                 Planejar agora
               </Link>
-              <button className="btn-ghost text-[15px]">
-                Ver como funciona
-              </button>
             </div>
 
             <div
