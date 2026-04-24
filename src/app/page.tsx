@@ -4,6 +4,10 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ContourBg } from "@/components/ui/ContourBg";
 import { Logo } from "@/components/ui/Logo";
+import { StatItem } from "@/components/ui/StatItem";
+import { StepCard } from "@/components/ui/StepCard";
+import { TestimonialCard } from "@/components/ui/TestimonialCard";
+import { SectionLabel } from "@/components/ui/SectionLabel";
 
 export default function Home() {
   const [visible, setVisible] = useState(false);
@@ -38,7 +42,7 @@ export default function Home() {
             >
               Sua próxima viagem,
               <br />
-              <em className="italic text-gold not-italic">
+              <em className="text-gold not-italic">
                 planejada em segundos.
               </em>
             </h1>
@@ -88,12 +92,7 @@ export default function Home() {
                 ["98%", "Satisfação"],
                 ["180+", "Países"],
               ].map(([n, l]) => (
-                <div key={l}>
-                  <div className="font-mono text-[26px] text-gold font-medium">
-                    {n}
-                  </div>
-                  <div className="text-[12px] text-muted mt-0.5">{l}</div>
-                </div>
+                <StatItem key={l} value={n!} label={l!} />
               ))}
             </div>
           </div>
@@ -110,9 +109,7 @@ export default function Home() {
       {/* ── HOW IT WORKS ── */}
       <section className="py-24 px-12 max-w-[1200px] mx-auto">
         <div className="text-center mb-16">
-          <div className="text-[11px] tracking-[0.14em] text-gold uppercase font-semibold mb-4">
-            Como funciona
-          </div>
+          <SectionLabel color="gold" style={{ marginBottom: 16 }}>Como funciona</SectionLabel>
           <h2 className="font-display text-[clamp(32px,4vw,48px)] font-medium text-foreground">
             Três passos para o roteiro perfeito
           </h2>
@@ -120,36 +117,11 @@ export default function Home() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[
-            {
-              num: "01",
-              title: "Descreva sua viagem",
-              body: "Informe destino, datas, orçamento e estilo. O processo leva menos de dois minutos.",
-            },
-            {
-              num: "02",
-              title: "A IA planeja tudo",
-              body: "Algoritmos analisam milhares de opções e criam um roteiro otimizado por hora, custo e distância.",
-            },
-            {
-              num: "03",
-              title: "Explore e ajuste",
-              body: "Visualize no mapa, reordene atividades e reserve passagens — tudo em um só lugar.",
-            },
-          ].map((s, i) => (
-            <div key={i} className="card p-9 relative overflow-hidden">
-              <div className="font-mono text-[64px] font-medium text-gold/10 absolute top-3 right-5 leading-none select-none">
-                {s.num}
-              </div>
-              <div className="w-10 h-10 rounded-full bg-gold-dim border border-gold/30 flex items-center justify-center mb-6">
-                <span className="font-mono text-[13px] text-gold font-medium">
-                  {s.num}
-                </span>
-              </div>
-              <h3 className="font-display text-[22px] font-medium mb-3 text-foreground">
-                {s.title}
-              </h3>
-              <p className="text-muted leading-relaxed text-[14px]">{s.body}</p>
-            </div>
+            { num: "01", title: "Descreva sua viagem",  body: "Informe destino, datas, orçamento e estilo. O processo leva menos de dois minutos." },
+            { num: "02", title: "A IA planeja tudo",    body: "Algoritmos analisam milhares de opções e criam um roteiro otimizado por hora, custo e distância." },
+            { num: "03", title: "Explore e ajuste",     body: "Visualize no mapa, reordene atividades e reserve passagens — tudo em um só lugar." },
+          ].map((s) => (
+            <StepCard key={s.num} num={s.num} title={s.title} body={s.body} />
           ))}
         </div>
       </section>
@@ -158,9 +130,7 @@ export default function Home() {
       <section className="py-20 px-12 bg-white/5 border-y border-border-light">
         <div className="max-w-[1200px] mx-auto">
           <div className="text-center mb-14">
-            <div className="text-[11px] tracking-[0.14em] text-gold uppercase font-semibold mb-4">
-              Depoimentos
-            </div>
+            <SectionLabel color="gold" style={{ marginBottom: 16 }}>Depoimentos</SectionLabel>
             <h2 className="font-display text-[clamp(28px,3vw,40px)] font-medium text-foreground">
               O que dizem os viajantes
             </h2>
@@ -168,49 +138,11 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {[
-              {
-                name: "Ana Lima",
-                role: "Designer, São Paulo",
-                dest: "Tóquio, Japão",
-                text: "Planejei 10 dias no Japão em 3 minutos. O roteiro foi preciso, cultural e dentro do orçamento. Impressionante.",
-              },
-              {
-                name: "Rafael Moura",
-                role: "Fotógrafo, Rio de Janeiro",
-                dest: "Marrocos",
-                text: "A IA entendeu exatamente o que eu queria: trilhas, pôr do sol e gastronomia local. Não esqueci um único dia.",
-              },
-              {
-                name: "Carla Souza",
-                role: "Engenheira, Curitiba",
-                dest: "Islândia",
-                text: "Viagem em casal, 7 dias na Islândia. O dashboard de custos foi perfeito para não extrapolar o orçamento.",
-              },
-            ].map((t, i) => (
-              <div key={i} className="card p-7 relative">
-                <div className="relative overflow-hidden">
-                  <ContourBg opacity={0.04} />
-                  <div className="text-[32px] text-gold opacity-40 font-serif leading-none mb-4">
-                    &quot;
-                  </div>
-                  <p className="text-[14px] text-foreground leading-relaxed mb-6 relative italic">
-                    {t.text}
-                  </p>
-                </div>
-                <div className="flex justify-between items-end">
-                  <div>
-                    <div className="font-semibold text-[13px] text-foreground">
-                      {t.name}
-                    </div>
-                    <div className="text-[12px] text-muted mt-0.5">
-                      {t.role}
-                    </div>
-                  </div>
-                  <div className="text-[11px] font-mono text-gold bg-gold-dim px-2.5 py-1 rounded-full border border-gold/20">
-                    {t.dest}
-                  </div>
-                </div>
-              </div>
+              { name: "Ana Lima",    role: "Designer, São Paulo",       dest: "Tóquio, Japão", text: "Planejei 10 dias no Japão em 3 minutos. O roteiro foi preciso, cultural e dentro do orçamento. Impressionante." },
+              { name: "Rafael Moura", role: "Fotógrafo, Rio de Janeiro", dest: "Marrocos",      text: "A IA entendeu exatamente o que eu queria: trilhas, pôr do sol e gastronomia local. Não esqueci um único dia." },
+              { name: "Carla Souza", role: "Engenheira, Curitiba",      dest: "Islândia",      text: "Viagem em casal, 7 dias na Islândia. O dashboard de custos foi perfeito para não extrapolar o orçamento." },
+            ].map((t) => (
+              <TestimonialCard key={t.name} name={t.name} role={t.role} dest={t.dest} text={t.text} />
             ))}
           </div>
         </div>

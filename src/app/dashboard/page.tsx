@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { ContourBg } from '@/components/ui/ContourBg';
+import { SectionLabel } from '@/components/ui/SectionLabel';
+import { InfoBox } from '@/components/ui/InfoBox';
 import { useTrip } from '@/context/TripContext';
 import type { Activity, ItineraryDay } from '@/types/trip';
 import { formatDateBR } from '@/lib/utils';
@@ -128,9 +130,7 @@ export default function DashboardPage() {
         {/* COL 1: Timeline */}
         <div style={{ borderRight: '1px solid var(--border-light)', overflowY: 'auto', padding: '24px 0' }}>
           <div style={{ padding: '0 20px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600 }}>
-              Roteiro · {DAYS.length} dias
-            </span>
+            <SectionLabel>Roteiro · {DAYS.length} dias</SectionLabel>
             <span style={{ fontFamily: 'var(--ff-mono)', fontSize: 11, color: 'var(--gold)' }}>
               {DAYS.reduce((a, d) => a + d.activities.length, 0)} atividades
             </span>
@@ -154,7 +154,7 @@ export default function DashboardPage() {
         {/* COL 3: Cost Panel */}
         <div ref={chartRef} style={{ borderLeft: '1px solid var(--border-light)', overflowY: 'auto', padding: '24px 20px' }}>
           <div style={{ textAlign: 'center', padding: '24px 0 20px', borderBottom: '1px solid var(--border-light)', marginBottom: 24 }}>
-            <div style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 10, fontWeight: 600 }}>Total estimado</div>
+            <SectionLabel style={{ marginBottom: 10 }}>Total estimado</SectionLabel>
             <div style={{ fontFamily: 'var(--ff-mono)', fontSize: 36, color: 'var(--gold)', fontWeight: 500, lineHeight: 1 }}>R$ 8.400</div>
             <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 6 }}>por pessoa · 7 noites</div>
           </div>
@@ -177,12 +177,11 @@ export default function DashboardPage() {
             <button className="btn-secondary" style={{ width: '100%', justifyContent: 'center', fontSize: 13 }}>Compartilhar roteiro</button>
           </div>
 
-          <div style={{ marginTop: 16, padding: 12, background: 'rgba(74,127,165,0.07)', border: '1px solid rgba(74,127,165,0.15)', borderRadius: 6 }}>
-            <div style={{ fontSize: 11, color: 'var(--blue)', fontWeight: 600, marginBottom: 4 }}>💡 Dica da IA</div>
+          <InfoBox variant="blue" title="Dica da IA" style={{ marginTop: 16 }}>
             <p style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6 }}>
               Viajando em junho, os preços de hotel são ~22% mais baixos que em julho. Considere reservar com 45+ dias de antecedência.
             </p>
-          </div>
+          </InfoBox>
         </div>
       </div>
 
@@ -194,7 +193,7 @@ export default function DashboardPage() {
 }
 
 function DayAccordion({ day, open, onToggle, onSelectActivity }: {
-  day: Day;
+  day: ItineraryDay;
   open: boolean;
   onToggle: () => void;
   onSelectActivity: (a: Activity) => void;
@@ -404,10 +403,9 @@ function AttractionModal({ activity, onClose }: { activity: Activity; onClose: (
             ))}
           </div>
 
-          <div style={{ marginBottom: 20 }}>
-            <div style={{ fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--blue)', fontWeight: 600, marginBottom: 8 }}>💡 Dica local</div>
+          <InfoBox variant="blue" title="Dica local" style={{ marginBottom: 20 }}>
             <p style={{ fontSize: 14, color: 'var(--text-muted)', lineHeight: 1.7 }}>{activity.desc}</p>
-          </div>
+          </InfoBox>
 
           <div style={{ display: 'flex', gap: 10 }}>
             <button

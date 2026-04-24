@@ -6,8 +6,11 @@ import { ContourBg } from '@/components/ui/ContourBg';
 import { useTrip } from '@/context/TripContext';
 import { Chip } from '@/components/ui/Chip';
 import { Button } from '@/components/ui/Button';
+import { StepHeading } from '@/components/ui/StepHeading';
+import { InfoBox } from '@/components/ui/InfoBox';
+import { FormField } from '@/components/ui/FormField';
 import { INTEREST_ICONS } from '@/lib/icons';
-import type { InterestId } from '@/types/trip';
+import type { InterestId, BudgetLevel } from '@/types/trip';
 
 const STEPS = ['Destino', 'Datas', 'Orçamento', 'Estilo'];
 
@@ -36,8 +39,8 @@ interface FormState {
   destInput: string;
   checkIn: string;
   checkOut: string;
-  budget: number;
-  interests: string[];
+  budget: BudgetLevel;
+  interests: InterestId[];
 }
 
 export default function WizardPage() {
@@ -183,8 +186,7 @@ function Step1({ form, updateForm }: { form: FormState; updateForm: (p: Partial<
 
   return (
     <div>
-      <h2 style={{ fontFamily: 'var(--ff-display)', fontSize: 26, fontWeight: 500, color: 'var(--text)', marginBottom: 8 }}>Para onde você vai?</h2>
-      <p style={{ fontSize: 14, color: 'var(--text-muted)', lineHeight: 1.6 }}>Informe a cidade, país ou região de destino.</p>
+      <StepHeading title="Para onde você vai?" subtitle="Informe a cidade, país ou região de destino." />
       <div style={{ position: 'relative', marginTop: 28 }}>
         <div style={{ position: 'relative' }}>
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none' }}>
@@ -237,23 +239,20 @@ function Step2({ form, updateForm }: { form: FormState; updateForm: (p: Partial<
 
   return (
     <div>
-      <h2 style={{ fontFamily: 'var(--ff-display)', fontSize: 26, fontWeight: 500, color: 'var(--text)', marginBottom: 8 }}>Quando você vai viajar?</h2>
-      <p style={{ fontSize: 14, color: 'var(--text-muted)', lineHeight: 1.6 }}>Escolha as datas de ida e volta.</p>
+      <StepHeading title="Quando você vai viajar?" subtitle="Escolha as datas de ida e volta." />
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginTop: 28 }}>
-        <div>
-          <span style={{ fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-muted)', display: 'block', marginBottom: 8 }}>Ida</span>
+        <FormField label="Ida">
           <input type="date" className="inp" value={form.checkIn} onChange={e => updateForm({ checkIn: e.target.value })} style={{ colorScheme: 'dark' }} />
-        </div>
-        <div>
-          <span style={{ fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-muted)', display: 'block', marginBottom: 8 }}>Volta</span>
+        </FormField>
+        <FormField label="Volta">
           <input type="date" className="inp" value={form.checkOut} min={form.checkIn} onChange={e => updateForm({ checkOut: e.target.value })} style={{ colorScheme: 'dark' }} />
-        </div>
+        </FormField>
       </div>
       {days > 0 && (
-        <div style={{ marginTop: 20, textAlign: 'center', padding: 16, background: 'rgba(74,127,165,0.08)', border: '1px solid rgba(74,127,165,0.2)', borderRadius: 6 }}>
+        <InfoBox variant="blue" style={{ marginTop: 20, textAlign: 'center' }}>
           <span style={{ fontFamily: 'var(--ff-mono)', fontSize: 28, color: 'var(--blue)' }}>{days}</span>
           <span style={{ fontSize: 14, color: 'var(--text-muted)', display: 'block', marginTop: 4 }}>dias de viagem</span>
-        </div>
+        </InfoBox>
       )}
     </div>
   );
@@ -269,8 +268,7 @@ function Step3({ form, updateForm }: { form: FormState; updateForm: (p: Partial<
 
   return (
     <div>
-      <h2 style={{ fontFamily: 'var(--ff-display)', fontSize: 26, fontWeight: 500, color: 'var(--text)', marginBottom: 8 }}>Qual o seu orçamento?</h2>
-      <p style={{ fontSize: 14, color: 'var(--text-muted)', lineHeight: 1.6 }}>Ajuste para o nível de conforto desejado.</p>
+      <StepHeading title="Qual o seu orçamento?" subtitle="Ajuste para o nível de conforto desejado." />
       <div style={{ marginTop: 36 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
           {BUDGET_LABELS.map((l, i) => (
@@ -280,20 +278,20 @@ function Step3({ form, updateForm }: { form: FormState; updateForm: (p: Partial<
         <input
           type="range" min={0} max={2} step={1} value={form.budget}
           className="gold-slider"
-          onChange={e => updateForm({ budget: Number(e.target.value) })}
+          onChange={e => updateForm({ budget: Number(e.target.value) as BudgetLevel })}
           style={{ background: `linear-gradient(to right, var(--gold) 0%, var(--gold) ${gradientPct}%, #2E3140 ${gradientPct}%, #2E3140 100%)` }}
         />
-        <div style={{ marginTop: 24, padding: 20, background: 'rgba(200,169,110,0.04)', border: '1px solid rgba(200,169,110,0.15)', borderRadius: 6 }}>
+        <InfoBox style={{ marginTop: 24, padding: 20 }}>
           <div style={{ fontFamily: 'var(--ff-mono)', fontSize: 20, color: 'var(--gold)', marginBottom: 6 }}>{budgetDetails[form.budget].range}</div>
           <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>{budgetDetails[form.budget].desc}</div>
-        </div>
+        </InfoBox>
       </div>
     </div>
   );
 }
 
 function Step4({ form, updateForm }: { form: FormState; updateForm: (p: Partial<FormState>) => void }) {
-  const toggle = (id: string) => {
+  const toggle = (id: InterestId) => {
     const next = form.interests.includes(id)
       ? form.interests.filter(i => i !== id)
       : [...form.interests, id];
@@ -302,8 +300,7 @@ function Step4({ form, updateForm }: { form: FormState; updateForm: (p: Partial<
 
   return (
     <div>
-      <h2 style={{ fontFamily: 'var(--ff-display)', fontSize: 26, fontWeight: 500, color: 'var(--text)', marginBottom: 8 }}>Qual é o seu estilo de viagem?</h2>
-      <p style={{ fontSize: 14, color: 'var(--text-muted)', lineHeight: 1.6 }}>Selecione quantos quiser. Isso personaliza cada detalhe do roteiro.</p>
+      <StepHeading title="Qual é o seu estilo de viagem?" subtitle="Selecione quantos quiser. Isso personaliza cada detalhe do roteiro." />
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 28 }}>
         {INTERESTS.map(({ id, label }) => {
           const Icon = INTEREST_ICONS[id];

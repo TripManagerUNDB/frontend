@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { ContourBg } from '@/components/ui/ContourBg';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { StatItem } from '@/components/ui/StatItem';
+import { PlanFeature } from '@/components/ui/PlanFeature';
 import type { SavedTrip } from '@/types/trip';
 
 const SAVED_TRIPS: SavedTrip[] = [
@@ -65,10 +67,7 @@ export default function ProfilePage() {
                 { n: SAVED_TRIPS.reduce((a, t) => a + t.days, 0),                           l: 'Dias viajados' },
                 { n: 'R$ ' + (SAVED_TRIPS.reduce((a, t) => a + t.cost, 0) / 1000).toFixed(0) + 'k', l: 'Investido' },
               ].map(({ n, l }) => (
-                <div key={l} style={{ textAlign: 'center' }}>
-                  <div style={{ fontFamily: 'var(--ff-mono)', fontSize: 24, color: 'var(--text)', fontWeight: 500 }}>{n}</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 3 }}>{l}</div>
-                </div>
+                <StatItem key={l} value={n} label={l} color="text" fontSize={24} align="center" />
               ))}
             </div>
           </div>
@@ -141,12 +140,7 @@ export default function ProfilePage() {
               <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>para sempre</div>
               <div style={{ position: 'absolute', top: 16, right: 16, background: 'var(--gold-dim)', border: '1px solid rgba(200,169,110,0.3)', borderRadius: 100, padding: '3px 10px', fontSize: 11, color: 'var(--gold)' }}>Ativo</div>
               {PLAN_FEATURES.free.map(f => (
-                <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, fontSize: 13, color: 'var(--text-muted)' }}>
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                    <path d="M2 7l4 4 6-6" stroke="var(--gold)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  {f}
-                </div>
+                <PlanFeature key={f}>{f}</PlanFeature>
               ))}
             </div>
 
@@ -158,12 +152,7 @@ export default function ProfilePage() {
                 <div style={{ fontFamily: 'var(--ff-mono)', fontSize: 36, color: 'var(--text)', marginBottom: 4 }}>R$ 29</div>
                 <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>por mês · cancele quando quiser</div>
                 {PLAN_FEATURES.premium.map(f => (
-                  <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, fontSize: 13, color: 'var(--text)' }}>
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                      <path d="M2 7l4 4 6-6" stroke="var(--gold)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                    {f}
-                  </div>
+                  <PlanFeature key={f} highlighted>{f}</PlanFeature>
                 ))}
                 <button className="btn-primary" style={{ marginTop: 20, width: '100%', justifyContent: 'center', fontSize: 14 }}>Assinar Premium</button>
               </div>
