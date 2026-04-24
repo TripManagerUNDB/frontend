@@ -1,14 +1,8 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-
-interface TripData {
-  destination: string;
-  checkIn: string;
-  checkOut: string;
-  budget: number;
-  interests: string[];
-}
+import { createContext, useContext, ReactNode } from 'react';
+import type { TripData } from '@/types/trip';
+import { useLocalStorage } from '@/hooks/useLocalStorage';
 
 interface TripContextType {
   tripData: TripData | null;
@@ -18,7 +12,7 @@ interface TripContextType {
 const TripContext = createContext<TripContextType | undefined>(undefined);
 
 export function TripProvider({ children }: { children: ReactNode }) {
-  const [tripData, setTripData] = useState<TripData | null>(null);
+  const [tripData, setTripData] = useLocalStorage<TripData | null>('trip-data', null);
 
   return (
     <TripContext.Provider value={{ tripData, setTripData }}>

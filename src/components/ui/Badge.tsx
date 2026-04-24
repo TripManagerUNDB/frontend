@@ -1,8 +1,8 @@
-import React from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 
 type BadgeVariant = 'planejada' | 'concluida' | 'ativo' | 'gratuito' | 'premium';
 
-const styles: Record<BadgeVariant, React.CSSProperties> = {
+const styles: Record<BadgeVariant, CSSProperties> = {
   planejada: {
     background: 'rgba(234,153,64,0.15)',
     border: '1px solid rgba(234,153,64,0.3)',
@@ -40,7 +40,7 @@ const labels: Record<BadgeVariant, string> = {
 
 interface BadgeProps {
   variant: BadgeVariant;
-  children?: React.ReactNode;
+  children?: ReactNode;
 }
 
 export function Badge({ variant, children }: BadgeProps) {

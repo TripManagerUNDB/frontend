@@ -1,19 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ContourBg } from '@/components/ui/ContourBg';
-
-interface SavedTrip {
-  id: number;
-  dest: string;
-  dates: string;
-  status: 'Planejada' | 'Concluída';
-  days: number;
-  cost: number;
-  emoji: string;
-  color: string;
-}
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import type { SavedTrip } from '@/types/trip';
 
 const SAVED_TRIPS: SavedTrip[] = [
   { id: 1, dest: 'Paris, França',           dates: 'Jun 15–22, 2026',  status: 'Planejada',  days: 7,  cost: 8400,  emoji: '🗼', color: '#EA9940' },
@@ -113,9 +105,9 @@ export default function ProfilePage() {
                   </button>
                 ))}
               </div>
-              <button className="btn-primary" onClick={() => router.push('/wizard')} style={{ fontSize: 13, padding: '10px 22px' }}>
+              <Button variant="primary" size="md" onClick={() => router.push('/wizard')}>
                 + Nova viagem
-              </button>
+              </Button>
             </div>
 
             {/* Grid */}
@@ -192,14 +184,7 @@ function TripCard({ trip, onClick }: { trip: SavedTrip; onClick: () => void }) {
         <ContourBg opacity={0.06} />
         <span style={{ fontSize: 48, position: 'relative', zIndex: 1 }}>{trip.emoji}</span>
         <div style={{ position: 'absolute', top: 12, right: 12 }}>
-          <span style={{
-            fontSize: 10, padding: '3px 8px', borderRadius: 100, fontWeight: 600,
-            background: trip.status === 'Planejada' ? 'rgba(234,153,64,0.15)' : 'rgba(48,112,130,0.15)',
-            border: `1px solid ${trip.status === 'Planejada' ? 'rgba(234,153,64,0.3)' : 'rgba(48,112,130,0.35)'}`,
-            color: trip.status === 'Planejada' ? 'var(--gold)' : '#307082',
-          }}>
-            {trip.status}
-          </span>
+          <Badge variant={trip.status === 'Planejada' ? 'planejada' : 'concluida'} />
         </div>
       </div>
 

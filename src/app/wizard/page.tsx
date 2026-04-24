@@ -1,21 +1,25 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ContourBg } from '@/components/ui/ContourBg';
 import { useTrip } from '@/context/TripContext';
+import { Chip } from '@/components/ui/Chip';
+import { Button } from '@/components/ui/Button';
+import { INTEREST_ICONS } from '@/lib/icons';
+import type { InterestId } from '@/types/trip';
 
 const STEPS = ['Destino', 'Datas', 'Orçamento', 'Estilo'];
 
-const INTERESTS = [
-  { id: 'praia',    label: 'Praia',        emoji: '🏖️' },
-  { id: 'cultura',  label: 'Cultura',      emoji: '🏛️' },
-  { id: 'gastro',   label: 'Gastronomia',  emoji: '🍽️' },
-  { id: 'natureza', label: 'Natureza',     emoji: '🌲' },
-  { id: 'noite',    label: 'Vida noturna', emoji: '🎭' },
-  { id: 'familia',  label: 'Família',      emoji: '👨‍👩‍👧' },
-  { id: 'romance',  label: 'Romântica',    emoji: '💑' },
-  { id: 'solo',     label: 'Solo',         emoji: '🎒' },
+const INTERESTS: { id: InterestId; label: string }[] = [
+  { id: 'praia',    label: 'Praia'        },
+  { id: 'cultura',  label: 'Cultura'      },
+  { id: 'gastro',   label: 'Gastronomia'  },
+  { id: 'natureza', label: 'Natureza'     },
+  { id: 'noite',    label: 'Vida noturna' },
+  { id: 'familia',  label: 'Família'      },
+  { id: 'romance',  label: 'Romântica'    },
+  { id: 'solo',     label: 'Solo'         },
 ];
 
 const DESTINATIONS = [
@@ -143,16 +147,17 @@ export default function WizardPage() {
         {/* Navigation */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 24 }}>
           {step > 0
-            ? <button className="btn-ghost" onClick={goPrev}>← Voltar</button>
+            ? <Button variant="ghost" size="sm" onClick={goPrev}>← Voltar</Button>
             : <div />}
-          <button
-            className="btn-primary"
+          <Button
+            variant="primary"
+            size="md"
             onClick={goNext}
             disabled={!canProceed() || loading}
-            style={{ opacity: !canProceed() ? 0.4 : 1, cursor: !canProceed() ? 'not-allowed' : 'pointer', minWidth: 160, justifyContent: 'center', fontSize: 14, padding: '12px 28px' }}
+            style={{ opacity: !canProceed() ? 0.4 : 1, cursor: !canProceed() ? 'not-allowed' : 'pointer', minWidth: 160 }}
           >
             {loading ? <LoadingPlane /> : step < 3 ? 'Continuar →' : 'Gerar Roteiro'}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -300,16 +305,15 @@ function Step4({ form, updateForm }: { form: FormState; updateForm: (p: Partial<
       <h2 style={{ fontFamily: 'var(--ff-display)', fontSize: 26, fontWeight: 500, color: 'var(--text)', marginBottom: 8 }}>Qual é o seu estilo de viagem?</h2>
       <p style={{ fontSize: 14, color: 'var(--text-muted)', lineHeight: 1.6 }}>Selecione quantos quiser. Isso personaliza cada detalhe do roteiro.</p>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 28 }}>
-        {INTERESTS.map(({ id, label, emoji }) => (
-          <button
-            key={id}
-            className={`chip${form.interests.includes(id) ? ' active' : ''}`}
-            onClick={() => toggle(id)}
-            style={{ fontSize: 14 }}
-          >
-            {emoji} {label}
-          </button>
-        ))}
+        {INTERESTS.map(({ id, label }) => {
+          const Icon = INTEREST_ICONS[id];
+          return (
+            <Chip key={id} active={form.interests.includes(id)} onClick={() => toggle(id)}>
+              <Icon size={15} weight={form.interests.includes(id) ? 'fill' : 'regular'} />
+              {label}
+            </Chip>
+          );
+        })}
       </div>
       {form.interests.length > 0 && (
         <div style={{ marginTop: 20, fontSize: 12, color: 'var(--text-muted)' }}>

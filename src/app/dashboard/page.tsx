@@ -1,25 +1,12 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { ContourBg } from '@/components/ui/ContourBg';
 import { useTrip } from '@/context/TripContext';
-
-interface Activity {
-  time: string;
-  name: string;
-  type: string;
-  icon: string;
-  dur: string;
-  cost: number;
-  desc: string;
-}
-
-interface Day {
-  day: number;
-  date: string;
-  activities: Activity[];
-}
+import type { Activity, ItineraryDay } from '@/types/trip';
+import { formatDateBR } from '@/lib/utils';
+import { INTEREST_ICONS, ACTIVITY_TYPE_ICONS } from '@/lib/icons';
 
 interface CostItem {
   label: string;
@@ -35,7 +22,7 @@ interface Pin {
   name: string;
 }
 
-const DAYS: Day[] = [
+const DAYS: ItineraryDay[] = [
   {
     day: 1, date: 'Seg, 15 Jun',
     activities: [
@@ -97,8 +84,8 @@ export default function DashboardPage() {
   const chartRef = useRef<HTMLDivElement>(null);
 
   const dest     = tripData?.destination || 'Paris, França';
-  const checkIn  = tripData?.checkIn  ? new Date(tripData.checkIn).toLocaleDateString('pt-BR',  { day: 'numeric', month: 'short' }) : '15 Jun';
-  const checkOut = tripData?.checkOut ? new Date(tripData.checkOut).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' }) : '22 Jun';
+  const checkIn  = tripData?.checkIn  ? formatDateBR(tripData.checkIn)  : '15 Jun';
+  const checkOut = tripData?.checkOut ? formatDateBR(tripData.checkOut) : '22 Jun';
 
   useEffect(() => {
     const t = setTimeout(() => setPinsVisible(true), 400);
@@ -106,8 +93,6 @@ export default function DashboardPage() {
     if (chartRef.current) obs.observe(chartRef.current);
     return () => { clearTimeout(t); obs.disconnect(); };
   }, []);
-
-  const INTEREST_ICONS: Record<string, string> = { praia: '🏖️', cultura: '🏛️', gastro: '🍽️', natureza: '🌲', noite: '🎭', familia: '👨‍👩‍👧', romance: '💑', solo: '🎒' };
 
   return (
     <div style={{ minHeight: 'calc(100vh - 64px)' }}>
@@ -119,11 +104,14 @@ export default function DashboardPage() {
             <span style={{ fontFamily: 'var(--ff-mono)', fontSize: 12, color: 'var(--text-muted)', marginLeft: 12 }}>{checkIn} – {checkOut}</span>
           </div>
           <div style={{ display: 'flex', gap: 6 }}>
-            {(tripData?.interests || ['cultura', 'gastro']).slice(0, 3).map(id => (
-              <span key={id} style={{ fontSize: 11, padding: '3px 10px', background: 'var(--gold-dim)', border: '1px solid rgba(200,169,110,0.2)', borderRadius: 100, color: 'var(--gold)' }}>
-                {INTEREST_ICONS[id] || '✈️'}
-              </span>
-            ))}
+            {(tripData?.interests || ['cultura', 'gastro']).slice(0, 3).map(id => {
+              const Icon = INTEREST_ICONS[id as keyof typeof INTEREST_ICONS];
+              return (
+                <span key={id} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 10px', background: 'var(--gold-dim)', border: '1px solid rgba(200,169,110,0.2)', borderRadius: 100, color: 'var(--gold)' }}>
+                  {Icon ? <Icon size={12} weight="fill" /> : null}
+                </span>
+              );
+            })}
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
@@ -247,7 +235,9 @@ function DayAccordion({ day, open, onToggle, onSelectActivity }: {
               onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
             >
               <span style={{ fontFamily: 'var(--ff-mono)', fontSize: 10, color: 'var(--text-dim)', minWidth: 38, paddingTop: 2 }}>{act.time}</span>
-              <span style={{ fontSize: 16, flexShrink: 0, marginTop: 1 }}>{act.icon}</span>
+              <span style={{ flexShrink: 0, marginTop: 1, color: 'var(--gold)', display: 'flex' }}>
+                {(() => { const Icon = ACTIVITY_TYPE_ICONS[act.type]; return Icon ? <Icon size={16} weight="duotone" /> : null; })()}
+              </span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 13, color: 'var(--text)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{act.name}</div>
                 <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{act.dur} · {act.type}</div>
