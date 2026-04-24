@@ -45,4 +45,5 @@ export interface SavedTrip {
   cost: number;
   emoji: string;
   color: string;
+  photo?: string;
 }

@@ -29,8 +29,18 @@ export default function ProfilePage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'viagens' | 'plano'>('viagens');
   const [filter, setFilter] = useState<typeof FILTERS[number]>('Todas');
+  const [tripPhotos, setTripPhotos] = useState<Record<number, string>>({});
 
   const shown = filter === 'Todas' ? SAVED_TRIPS : SAVED_TRIPS.filter(t => t.status === filter);
+
+  const handlePhotoChange = (id: number, url: string | undefined) => {
+    setTripPhotos(prev => {
+      const next = { ...prev };
+      if (url) next[id] = url;
+      else delete next[id];
+      return next;
+    });
+  };
 
   return (
     <div style={{ minHeight: 'calc(100vh - 64px)' }}>
@@ -63,8 +73,8 @@ export default function ProfilePage() {
             {/* Stats */}
             <div style={{ display: 'flex', gap: 28 }}>
               {[
-                { n: SAVED_TRIPS.length,                                                     l: 'Viagens'       },
-                { n: SAVED_TRIPS.reduce((a, t) => a + t.days, 0),                           l: 'Dias viajados' },
+                { n: SAVED_TRIPS.length,                                                      l: 'Viagens'       },
+                { n: SAVED_TRIPS.reduce((a, t) => a + t.days, 0),                            l: 'Dias viajados' },
                 { n: 'R$ ' + (SAVED_TRIPS.reduce((a, t) => a + t.cost, 0) / 1000).toFixed(0) + 'k', l: 'Investido' },
               ].map(({ n, l }) => (
                 <StatItem key={l} value={n} label={l} color="text" fontSize={24} align="center" />
@@ -112,7 +122,13 @@ export default function ProfilePage() {
             {/* Grid */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
               {shown.map(trip => (
-                <TripCard key={trip.id} trip={trip} onClick={() => router.push('/dashboard')} />
+                <TripCard
+                  key={trip.id}
+                  trip={trip}
+                  photo={tripPhotos[trip.id] ?? trip.photo}
+                  onClick={() => router.push('/dashboard')}
+                  onPhotoChange={(url) => handlePhotoChange(trip.id, url)}
+                />
               ))}
               <div
                 onClick={() => router.push('/wizard')}
@@ -164,19 +180,169 @@ export default function ProfilePage() {
   );
 }
 
-function TripCard({ trip, onClick }: { trip: SavedTrip; onClick: () => void }) {
+function TripCard({
+  trip,
+  photo,
+  onClick,
+  onPhotoChange,
+}: {
+  trip: SavedTrip;
+  photo?: string;
+  onClick: () => void;
+  onPhotoChange: (url: string | undefined) => void;
+}) {
+  const [hovered, setHovered] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [inputUrl, setInputUrl] = useState('');
+
   const rgb = trip.color === '#EA9940' ? '234,153,64' : trip.color === '#307082' ? '48,112,130' : '108,163,162';
 
+  const handleSave = () => {
+    const url = inputUrl.trim();
+    if (url) onPhotoChange(url);
+    setEditing(false);
+    setInputUrl('');
+  };
+
+  const handleRemove = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onPhotoChange(undefined);
+    setEditing(false);
+    setInputUrl('');
+  };
+
+  const openEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setInputUrl(photo ?? '');
+    setEditing(true);
+  };
+
   return (
-    <div className="card" onClick={onClick} style={{ cursor: 'pointer', overflow: 'hidden', position: 'relative' }}>
-      <div style={{ height: 130, background: `linear-gradient(135deg, rgba(${rgb},0.2) 0%, rgba(18,33,46,0.95) 100%)`, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <ContourBg opacity={0.06} />
-        <span style={{ fontSize: 48, position: 'relative', zIndex: 1 }}>{trip.emoji}</span>
-        <div style={{ position: 'absolute', top: 12, right: 12 }}>
+    <div
+      className="card"
+      onClick={editing ? undefined : onClick}
+      style={{ cursor: editing ? 'default' : 'pointer', overflow: 'hidden', position: 'relative' }}
+    >
+      {/* Image area */}
+      <div
+        style={{
+          height: 140,
+          position: 'relative',
+          overflow: 'hidden',
+          background: photo
+            ? '#0e1f2c'
+            : `linear-gradient(135deg, rgba(${rgb},0.2) 0%, rgba(18,33,46,0.95) 100%)`,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => { setHovered(false); }}
+      >
+        {/* Photo or gradient fallback */}
+        {photo ? (
+          <img
+            src={photo}
+            alt={trip.dest}
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
+          />
+        ) : (
+          <>
+            <ContourBg opacity={0.06} />
+            <span style={{ fontSize: 48, position: 'relative', zIndex: 1 }}>{trip.emoji}</span>
+          </>
+        )}
+
+        {/* Status badge */}
+        <div style={{ position: 'absolute', top: 12, right: 12, zIndex: 3 }}>
           <Badge variant={trip.status === 'Planejada' ? 'planejada' : 'concluida'} />
         </div>
+
+        {/* Hover overlay */}
+        {(hovered || editing) && !editing && (
+          <div
+            style={{
+              position: 'absolute', inset: 0, zIndex: 2,
+              background: 'rgba(0,0,0,0.45)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            <button
+              onClick={openEdit}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 7,
+                background: 'rgba(18,33,46,0.9)',
+                border: '1px solid rgba(200,169,110,0.3)',
+                borderRadius: 8, padding: '8px 16px',
+                color: 'var(--gold)', fontSize: 12, fontWeight: 500,
+                cursor: 'pointer', backdropFilter: 'blur(4px)',
+              }}
+            >
+              <CameraIcon />
+              {photo ? 'Alterar foto' : 'Adicionar foto'}
+            </button>
+          </div>
+        )}
+
+        {/* Inline URL editor (overlays the image) */}
+        {editing && (
+          <div
+            style={{
+              position: 'absolute', inset: 0, zIndex: 4,
+              background: 'rgba(13,20,28,0.97)',
+              display: 'flex', flexDirection: 'column', justifyContent: 'center',
+              padding: '0 18px',
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8, letterSpacing: '0.04em' }}>
+              Cole a URL da imagem
+            </div>
+            <div style={{ display: 'flex', gap: 6 }}>
+              <input
+                autoFocus
+                className="inp"
+                placeholder="https://..."
+                value={inputUrl}
+                onChange={e => setInputUrl(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') handleSave();
+                  if (e.key === 'Escape') { setEditing(false); setInputUrl(''); }
+                }}
+                style={{ fontSize: 12, flex: 1 }}
+              />
+              <button
+                onClick={handleSave}
+                className="btn-primary"
+                style={{ fontSize: 11, padding: '0 12px', minWidth: 'unset' }}
+              >
+                OK
+              </button>
+              <button
+                onClick={e => { e.stopPropagation(); setEditing(false); setInputUrl(''); }}
+                className="btn-ghost"
+                style={{ fontSize: 14, padding: '0 10px', lineHeight: 1 }}
+              >
+                ✕
+              </button>
+            </div>
+            {photo && (
+              <button
+                onClick={handleRemove}
+                style={{
+                  marginTop: 10, fontSize: 11, color: 'var(--text-dim)',
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  textAlign: 'left', padding: 0, textDecoration: 'underline',
+                }}
+              >
+                Remover foto
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
+      {/* Card body */}
       <div style={{ padding: '18px 20px 20px' }}>
         <h3 style={{ fontFamily: 'var(--ff-display)', fontSize: 17, fontWeight: 500, marginBottom: 4, color: 'var(--text)' }}>{trip.dest}</h3>
         <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 14 }}>{trip.dates}</div>
@@ -186,5 +352,14 @@ function TripCard({ trip, onClick }: { trip: SavedTrip; onClick: () => void }) {
         </div>
       </div>
     </div>
+  );
+}
+
+function CameraIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+      <circle cx="12" cy="13" r="4" />
+    </svg>
   );
 }
