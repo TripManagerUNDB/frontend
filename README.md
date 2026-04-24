@@ -1,74 +1,94 @@
-# TripManager — Planejador de Viagens com IA
+# TripManager — Planejador de Viagens com IA 🌍✈️
 
-Frontend da aplicação TripManager, construído em Next.js. Permite que usuários criem roteiros de viagem personalizados com base em destino, datas, orçamento e estilo de viagem.
+O **TripManager** é o frontend de uma aplicação moderna para planejamento de viagens, construído com **Next.js 16**, **React 19** e **Tailwind CSS v4**. Ele permite que os usuários criem roteiros personalizados e inteligentes com base em suas preferências, orçamento e estilo de viagem.
 
-## Stack
+---
 
-- **Next.js 16** com App Router
-- **React 19**
-- **TypeScript 5**
-- **Tailwind CSS v4**
-- **Fontes:** Playfair Display, DM Sans, DM Mono
+## ✨ Funcionalidades
 
-## Pré-requisitos
+- **Planejamento Inteligente:** Wizard em 4 etapas para definir destino, datas, orçamento e estilo.
+- **Roteiros Dinâmicos:** Visualização detalhada do roteiro, incluindo integração com mapas e estimativas de custo.
+- **Gestão de Perfil:** Visualize suas viagens salvas e gerencie suas preferências.
+- **Experiência Premium:** Design moderno com animações sutis, backgrounds dinâmicos e componentes altamente reutilizáveis.
 
-- Node.js (versão LTS recomendada)
-- Yarn
+---
 
-```bash
-npm install -g yarn
-```
+## 🛠️ Stack Tecnológica
 
-## Instalação
+- **Core:** [Next.js 16](https://nextjs.org/) (App Router), [React 19](https://react.dev/)
+- **Linguagem:** [TypeScript](https://www.typescriptlang.org/)
+- **Estilização:** [Tailwind CSS v4](https://tailwindcss.com/)
+- **Ícones:** [Phosphor Icons](https://phosphoricons.com/)
+- **Tipografia:** 
+  - `Playfair Display` (Títulos e Elegância)
+  - `DM Sans` (Corpo e Leitura)
+  - `DM Mono` (Dados e Valores)
 
-```bash
-yarn install
-```
+---
 
-## Rodar em desenvolvimento
+## 🎨 Design System & UI
 
-```bash
-yarn dev
-```
+O projeto utiliza um sistema de design focado em estética premium e modularidade. Os componentes principais estão localizados em `src/components/ui/`:
 
-Acesse: [http://localhost:3000](http://localhost:3000)
+- **ContourBg:** Background animado com curvas elegantes.
+- **Logo:** Identidade visual da marca.
+- **StatItem:** Exibição de dados estatísticos com ícones.
+- **StepCard:** Cards informativos para processos de etapas.
+- **TestimonialCard:** Prova social e depoimentos.
+- **Button / Badge / Chip:** Componentes de interação base.
 
-## Scripts disponíveis
+---
 
-| Comando | Descrição |
-|---------|-----------|
-| `yarn dev` | Servidor de desenvolvimento |
-| `yarn build` | Build de produção |
-| `yarn start` | Inicia o build de produção |
-| `yarn lint` | Verifica erros de lint |
-
-## Rotas
-
-| Rota | Página |
-|------|--------|
-| `/` | Landing page |
-| `/wizard` | Formulário de planejamento (4 etapas) |
-| `/dashboard` | Roteiro gerado com mapa e custos |
-| `/profile` | Perfil e viagens salvas |
-
-## Estrutura de pastas
+## 📂 Estrutura de Pastas
 
 ```
 src/
 ├── app/                  # Rotas (App Router)
-│   ├── page.tsx          # Landing page
-│   ├── wizard/           # Formulário de viagem
-│   ├── dashboard/        # Roteiro gerado
-│   └── profile/          # Perfil do usuário
+│   ├── page.tsx          # Landing page (Home)
+│   ├── wizard/           # Fluxo de planejamento (4 etapas)
+│   ├── dashboard/        # Visualização do roteiro gerado
+│   └── profile/          # Área do usuário e histórico
 ├── components/
-│   ├── layout/           # Navbar
-│   └── ui/               # Button, Badge, Chip, Logo, ContourBg
+│   ├── layout/           # Componentes globais (Navbar, Footer)
+│   └── ui/               # Componentes atômicos e de design system
 ├── context/              # TripContext (estado global da viagem)
-├── hooks/                # useLocalStorage
-├── lib/                  # Utilitários (formatação de datas, labels)
-└── types/                # Tipos TypeScript compartilhados
+├── hooks/                # Hooks customizados (ex: useLocalStorage)
+├── lib/                  # Utilitários (formatação, constantes, API)
+└── types/                # Definições de tipos TypeScript
 ```
 
-## Backend
+---
 
-O backend será desenvolvido em **Spring Boot**. A integração com a API será feita a partir de `src/lib/`.
+## 🚀 Como começar
+
+### Pré-requisitos
+- Node.js (v20+)
+- Yarn
+
+```bash
+# Instalar Yarn globalmente (se não tiver)
+npm install -g yarn
+```
+
+### Instalação
+```bash
+yarn install
+```
+
+### Desenvolvimento
+```bash
+yarn dev
+```
+O servidor estará disponível em: [http://localhost:3000](http://localhost:3000)
+
+---
+
+## 🔗 Backend (API)
+
+O backend deste projeto está sendo desenvolvido em **Spring Boot**. A integração com a API será centralizada em `src/lib/` para facilitar a manutenção e escalabilidade.
+
+---
+
+## 📝 Licença
+
+Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
