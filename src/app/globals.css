@@ -1,26 +1,149 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #12212E;
+  --foreground: #ECE7DC;
+  --bg: #12212E;
+  --bg-card: #1a2d3a;
+  --border: #243545;
+  --border-light: rgba(108,163,162,0.12);
+  --gold: #EA9940;
+  --gold-dim: rgba(234,153,64,0.15);
+  --gold-glow: rgba(234,153,64,0.3);
+  --blue: #307082;
+  --blue-dim: rgba(48,112,130,0.15);
+  --text: #ECE7DC;
+  --text-muted: #6CA3A2;
+  --text-dim: #3a5060;
+  --ff-display: var(--font-display), serif;
+  --ff-body: var(--font-body), sans-serif;
+  --ff-mono: var(--font-mono), monospace;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@theme {
+  --color-background: var(--bg);
+  --color-foreground: var(--text);
+  --color-card: var(--bg-card);
+  --color-gold: var(--gold);
+  --color-gold-dim: var(--gold-dim);
+  --color-blue: var(--blue);
+  --color-muted: var(--text-muted);
+  --color-dim: var(--text-dim);
+  --color-border-custom: var(--border);
+  --color-border-light: var(--border-light);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  --font-display: var(--font-display), serif;
+  --font-body: var(--font-body), sans-serif;
+  --font-mono: var(--font-mono), monospace;
+
+  --animate-fade-up: fade-up 0.5s ease-out;
+  --animate-slide-in-right: slide-in-right 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+  --animate-slide-in-left: slide-in-left 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+  --animate-pulse-custom: pulse-custom 2s infinite;
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes slide-in-right {
+    from { opacity: 0; transform: translateX(40px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes slide-in-left {
+    from { opacity: 0; transform: translateX(-40px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes pulse-custom {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Grain overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  opacity: 0.035;
+  pointer-events: none;
+  z-index: 9999;
+  mix-blend-mode: overlay;
 }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+@layer base {
+  body {
+    @apply bg-background text-foreground font-body;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center gap-2 px-7 py-3 bg-gold text-[#0D0E12] font-semibold text-sm tracking-wide rounded transition-all hover:-translate-y-px hover:shadow-[0_6px_24px_var(--gold-glow)];
+  }
+  
+  .btn-secondary {
+    @apply inline-flex items-center gap-2 px-6 py-[11px] bg-transparent text-gold font-medium text-sm tracking-wide rounded border border-gold transition-all hover:bg-gold-dim hover:-translate-y-px;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center gap-1.5 px-3.5 py-2 bg-transparent text-muted font-normal text-[13px] rounded transition-colors hover:text-foreground relative;
+  }
+
+  .card {
+    @apply bg-card border border-border-light rounded-lg shadow-[0_8px_40px_rgba(0,0,0,0.4)] transition-all hover:shadow-[0_16px_60px_rgba(0,0,0,0.6)] hover:border-[rgba(200,169,110,0.2)] hover:-translate-y-0.5;
+  }
+
+  .inp {
+    @apply w-full bg-background border border-[#2E3140] rounded text-foreground font-body text-sm px-4 py-3 outline-none transition-all focus:border-gold focus:shadow-[0_0_0_3px_var(--gold-dim)] placeholder:text-dim;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 px-4 py-2 rounded-full border border-border-custom bg-white/5 text-muted text-[13px] cursor-pointer transition-all hover:border-gold hover:text-foreground select-none;
+  }
+
+  .chip.active {
+    @apply border-gold bg-gold-dim text-gold;
+  }
+}
+
+@keyframes spin    { to { transform: rotate(360deg); } }
+@keyframes fadeIn  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes bounce  {
+  0%   { transform: translateY(-8px); opacity: 0; }
+  60%  { transform: translateY(3px); }
+  100% { transform: translateY(0); opacity: 1; }
+}
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+input[type=range].gold-slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 3px;
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+input[type=range].gold-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--gold);
+  border: 3px solid var(--bg);
+  box-shadow: 0 0 0 1px var(--gold), 0 4px 12px rgba(200,169,110,0.4);
+  cursor: pointer;
+}
+
