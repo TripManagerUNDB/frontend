@@ -59,11 +59,11 @@ const DAYS: ItineraryDay[] = [
 ];
 
 const COST_BREAKDOWN: CostItem[] = [
-  { label: 'Voo',         value: 3200, color: '#EA9940', pct: 38 },
-  { label: 'Hotel',       value: 2800, color: '#307082', pct: 33 },
-  { label: 'Alimentação', value: 1400, color: '#6CA3A2', pct: 17 },
-  { label: 'Transporte',  value: 600,  color: '#ECE7DC', pct: 7  },
-  { label: 'Atrações',    value: 400,  color: '#243545', pct: 5  },
+  { label: 'Passeios & Ingressos', value: 3360, color: '#EA9940', pct: 40 },
+  { label: 'Alimentação',          value: 2520, color: '#6CA3A2', pct: 30 },
+  { label: 'Transporte local',     value: 1260, color: '#307082', pct: 15 },
+  { label: 'Compras',              value: 840,  color: '#ECE7DC', pct: 10 },
+  { label: 'Imprevistos',          value: 420,  color: '#243545', pct: 5  },
 ];
 
 const MAP_PINS: MapPin[] = [
@@ -162,7 +162,7 @@ export default function DashboardPage() {
           <div style={{ textAlign: 'center', padding: '24px 0 20px', borderBottom: '1px solid var(--border-light)', marginBottom: 24 }}>
             <SectionLabel style={{ marginBottom: 10 }}>Total estimado</SectionLabel>
             <div style={{ fontFamily: 'var(--ff-mono)', fontSize: 36, color: 'var(--gold)', fontWeight: 500, lineHeight: 1 }}>R$ 8.400</div>
-            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 6 }}>por pessoa · 7 noites</div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 6 }}>por pessoa · 4 dias</div>
           </div>
 
           <DonutChart data={COST_BREAKDOWN} visible={chartVisible} />
