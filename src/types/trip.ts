@@ -47,6 +47,10 @@ export interface MapPin {
   type: MapPinType;
 }
 
+export interface TripResponse {
+  map_pins: MapPin[];
+}
+
 export interface SavedTrip {
   id: number;
   dest: string;

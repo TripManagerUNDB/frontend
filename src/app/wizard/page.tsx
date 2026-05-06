@@ -85,10 +85,10 @@ export default function WizardPage() {
     setTimeout(() => {
       setTripData({
         destination: form.destination || 'Paris, França',
-        budget: form.budget,
-        interests: form.interests,
-        checkIn: form.checkIn || '2026-06-15',
-        checkOut: form.checkOut || '2026-06-22',
+        budget:      form.budget,
+        interests:   form.interests,
+        checkIn:     form.checkIn  || '2026-06-15',
+        checkOut:    form.checkOut || '2026-06-22',
       });
       router.push('/dashboard');
     }, 2600);

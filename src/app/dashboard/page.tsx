@@ -83,7 +83,7 @@ const MAP_PINS: MapPin[] = [
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { tripData } = useTrip();
+  const { tripData, tripResponse } = useTrip();
   const [openDay, setOpenDay] = useState(0);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
   const [chartVisible, setChartVisible] = useState(false);
@@ -152,7 +152,7 @@ export default function DashboardPage() {
         {/* COL 2: Map */}
         <div style={{ position: 'relative', background: '#0e1f2c', overflow: 'hidden' }}>
           <LeafletMap
-            pins={MAP_PINS}
+            pins={tripResponse?.map_pins ?? MAP_PINS}
             activeDay={openDay >= 0 ? DAYS[openDay].day : undefined}
           />
         </div>
