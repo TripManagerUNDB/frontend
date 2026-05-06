@@ -3,26 +3,26 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ContourBg } from '@/components/ui/ContourBg';
-import { useTrip } from '@/context/TripContext';
 import { Chip } from '@/components/ui/Chip';
 import { Button } from '@/components/ui/Button';
 import { StepHeading } from '@/components/ui/StepHeading';
 import { InfoBox } from '@/components/ui/InfoBox';
 import { FormField } from '@/components/ui/FormField';
 import { INTEREST_ICONS } from '@/lib/icons';
+import { createTrip, generateItinerary, isLoggedIn, saveAuth, login } from '@/lib/api';
 import type { InterestId, BudgetLevel } from '@/types/trip';
 
 const STEPS = ['Destino', 'Datas', 'Orçamento', 'Estilo'];
 
 const INTERESTS: { id: InterestId; label: string }[] = [
-  { id: 'praia',    label: 'Praia'        },
-  { id: 'cultura',  label: 'Cultura'      },
-  { id: 'gastro',   label: 'Gastronomia'  },
-  { id: 'natureza', label: 'Natureza'     },
-  { id: 'noite',    label: 'Vida noturna' },
-  { id: 'familia',  label: 'Família'      },
-  { id: 'romance',  label: 'Romântica'    },
-  { id: 'solo',     label: 'Solo'         },
+  { id: 'praia', label: 'Praia' },
+  { id: 'cultura', label: 'Cultura' },
+  { id: 'gastro', label: 'Gastronomia' },
+  { id: 'natureza', label: 'Natureza' },
+  { id: 'noite', label: 'Vida noturna' },
+  { id: 'familia', label: 'Família' },
+  { id: 'romance', label: 'Romântica' },
+  { id: 'solo', label: 'Solo' },
 ];
 
 const DESTINATIONS = [
@@ -33,6 +33,7 @@ const DESTINATIONS = [
 ];
 
 const BUDGET_LABELS = ['Econômico', 'Confortável', 'Luxo'];
+const TRAVEL_STYLES = ['relaxado', 'moderado', 'intenso'];
 
 interface FormState {
   destination: string;
@@ -41,15 +42,17 @@ interface FormState {
   checkOut: string;
   budget: BudgetLevel;
   interests: InterestId[];
+  travelers: number;
+  travelStyle: string;
 }
 
 export default function WizardPage() {
   const router = useRouter();
-  const { setTripData } = useTrip();
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState(1);
   const [animKey, setAnimKey] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [form, setForm] = useState<FormState>({
     destination: '',
     destInput: '',
@@ -57,6 +60,8 @@ export default function WizardPage() {
     checkOut: '',
     budget: 1,
     interests: [],
+    travelers: 1,
+    travelStyle: 'moderado',
   });
 
   const updateForm = (patch: Partial<FormState>) =>
@@ -80,18 +85,48 @@ export default function WizardPage() {
     }
   };
 
-  const generate = () => {
+  const generate = async () => {
     setLoading(true);
-    setTimeout(() => {
-      setTripData({
+    setError('');
+
+    try {
+      // Se não estiver logado, faz login demo automático
+      if (!isLoggedIn()) {
+        try {
+          const auth = await login('lucas@email.com', '123456');
+          saveAuth(auth);
+        } catch {
+          router.push('/login');
+          return;
+        }
+      }
+
+      // 1. Cria a viagem
+      const trip = await createTrip({
         destination: form.destination || 'Paris, França',
-        budget: form.budget,
-        interests: form.interests,
         checkIn: form.checkIn || '2026-06-15',
         checkOut: form.checkOut || '2026-06-22',
+        budget: form.budget,
+        interests: form.interests,
+        travelers: form.travelers,
+        travelStyle: form.travelStyle,
       });
+
+      // 2. Gera o roteiro via IA
+      await generateItinerary(trip.id);
+
+      // 3. Salva o tripId no localStorage e vai para o dashboard
+      localStorage.setItem('currentTripId', trip.id);
+      localStorage.setItem('currentTripDest', trip.destination);
+      localStorage.setItem('currentTripCheckIn', trip.checkIn);
+      localStorage.setItem('currentTripCheckOut', trip.checkOut);
+
+      await new Promise(resolve => setTimeout(resolve, 500));
       router.push('/dashboard');
-    }, 2600);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Erro ao gerar roteiro.');
+      setLoading(false);
+    }
   };
 
   const canProceed = () => {
@@ -137,6 +172,12 @@ export default function WizardPage() {
           </div>
         </div>
 
+        {error && (
+          <div style={{ marginBottom: 16, padding: '12px 16px', background: 'rgba(220,53,69,0.1)', border: '1px solid rgba(220,53,69,0.3)', borderRadius: 6, color: '#ff6b6b', fontSize: 13 }}>
+            {error}
+          </div>
+        )}
+
         {/* Step card */}
         <div key={animKey} style={{ animation: `slideIn${direction > 0 ? 'Right' : 'Left'} 0.38s cubic-bezier(.4,0,.2,1)` }}>
           <div className="card" style={{ padding: '44px 44px 36px' }}>
@@ -173,7 +214,7 @@ function LoadingPlane() {
       <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style={{ animation: 'spin 1s linear infinite' }}>
         <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" />
       </svg>
-      Planejando...
+      Planejando com IA...
     </span>
   );
 }
@@ -228,6 +269,39 @@ function Step1({ form, updateForm }: { form: FormState; updateForm: (p: Partial<
           <span style={{ fontSize: 13, color: 'var(--gold)' }}>{form.destination}</span>
         </div>
       )}
+      {/* Número de viajantes */}
+      <div style={{ marginTop: 24 }}>
+        <label style={{ fontSize: 12, color: 'var(--text-muted)', display: 'block', marginBottom: 8 }}>Número de viajantes</label>
+        <div style={{ display: 'flex', gap: 8 }}>
+          {[1, 2, 3, 4, 5].map(n => (
+            <button
+              key={n}
+              onClick={() => updateForm({ travelers: n })}
+              style={{
+                width: 40, height: 40, borderRadius: 6,
+                border: form.travelers === n ? '1.5px solid var(--gold)' : '1px solid var(--border)',
+                background: form.travelers === n ? 'var(--gold-dim)' : 'transparent',
+                color: form.travelers === n ? 'var(--gold)' : 'var(--text-muted)',
+                cursor: 'pointer', fontSize: 14, fontWeight: 600,
+              }}
+            >
+              {n}
+            </button>
+          ))}
+          <button
+            onClick={() => updateForm({ travelers: 6 })}
+            style={{
+              padding: '0 12px', height: 40, borderRadius: 6,
+              border: form.travelers === 6 ? '1.5px solid var(--gold)' : '1px solid var(--border)',
+              background: form.travelers === 6 ? 'var(--gold-dim)' : 'transparent',
+              color: form.travelers === 6 ? 'var(--gold)' : 'var(--text-muted)',
+              cursor: 'pointer', fontSize: 12,
+            }}
+          >
+            6+
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -260,9 +334,9 @@ function Step2({ form, updateForm }: { form: FormState; updateForm: (p: Partial<
 
 function Step3({ form, updateForm }: { form: FormState; updateForm: (p: Partial<FormState>) => void }) {
   const budgetDetails = [
-    { label: 'Econômico',   desc: 'Hostels, transporte público, restaurantes locais', range: 'R$ 3.000 – 6.000' },
-    { label: 'Confortável', desc: 'Hotéis 3–4 estrelas, passeios organizados',         range: 'R$ 6.000 – 15.000' },
-    { label: 'Luxo',        desc: 'Hotéis boutique, experiências exclusivas',           range: 'R$ 15.000+' },
+    { label: 'Econômico', desc: 'Hostels, transporte público, restaurantes locais', range: 'R$ 3.000 – 6.000' },
+    { label: 'Confortável', desc: 'Hotéis 3–4 estrelas, passeios organizados', range: 'R$ 6.000 – 15.000' },
+    { label: 'Luxo', desc: 'Hotéis boutique, experiências exclusivas', range: 'R$ 15.000+' },
   ];
   const gradientPct = (form.budget / 2) * 100;
 
@@ -285,6 +359,28 @@ function Step3({ form, updateForm }: { form: FormState; updateForm: (p: Partial<
           <div style={{ fontFamily: 'var(--ff-mono)', fontSize: 20, color: 'var(--gold)', marginBottom: 6 }}>{budgetDetails[form.budget].range}</div>
           <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>{budgetDetails[form.budget].desc}</div>
         </InfoBox>
+
+        {/* Estilo de viagem */}
+        <div style={{ marginTop: 24 }}>
+          <label style={{ fontSize: 12, color: 'var(--text-muted)', display: 'block', marginBottom: 10 }}>Ritmo da viagem</label>
+          <div style={{ display: 'flex', gap: 8 }}>
+            {TRAVEL_STYLES.map(s => (
+              <button
+                key={s}
+                onClick={() => updateForm({ travelStyle: s })}
+                style={{
+                  flex: 1, padding: '8px 0', borderRadius: 6, cursor: 'pointer',
+                  border: form.travelStyle === s ? '1.5px solid var(--gold)' : '1px solid var(--border)',
+                  background: form.travelStyle === s ? 'var(--gold-dim)' : 'transparent',
+                  color: form.travelStyle === s ? 'var(--gold)' : 'var(--text-muted)',
+                  fontSize: 12, textTransform: 'capitalize',
+                }}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
