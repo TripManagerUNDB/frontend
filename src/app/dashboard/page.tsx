@@ -1,27 +1,26 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { ContourBg } from '@/components/ui/ContourBg';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { InfoBox } from '@/components/ui/InfoBox';
 import { useTrip } from '@/context/TripContext';
-import type { Activity, ItineraryDay } from '@/types/trip';
+import type { Activity, ItineraryDay, MapPin } from '@/types/trip';
 import { formatDateBR } from '@/lib/utils';
 import { INTEREST_ICONS, ACTIVITY_TYPE_ICONS } from '@/lib/icons';
+
+const LeafletMap = dynamic(
+  () => import('@/components/ui/LeafletMap').then(m => m.LeafletMap),
+  { ssr: false, loading: () => <div style={{ width: '100%', height: '100%', background: '#0e1f2c' }} /> },
+);
 
 interface CostItem {
   label: string;
   value: number;
   color: string;
   pct: number;
-}
-
-interface Pin {
-  x: number;
-  y: number;
-  label: number;
-  name: string;
 }
 
 const DAYS: ItineraryDay[] = [
@@ -67,21 +66,26 @@ const COST_BREAKDOWN: CostItem[] = [
   { label: 'Atrações',    value: 400,  color: '#243545', pct: 5  },
 ];
 
-const PINS: Pin[] = [
-  { x: 210, y: 95,  label: 1, name: 'Torre Eiffel' },
-  { x: 310, y: 130, label: 2, name: 'Louvre'       },
-  { x: 360, y: 100, label: 3, name: 'Marais'       },
-  { x: 265, y: 155, label: 4, name: 'Pompidou'     },
-  { x: 190, y: 170, label: 5, name: 'Montmartre'   },
+const MAP_PINS: MapPin[] = [
+  { coordinates: { lat: 48.8584, lng: 2.2945 }, activity: 'Torre Eiffel',       location: 'Champ de Mars',        day: 1, time: '09:00', type: 'passeio'     },
+  { coordinates: { lat: 48.8539, lng: 2.3321 }, activity: 'Café de Flore',       location: 'Saint-Germain-des-Prés', day: 1, time: '12:30', type: 'restaurante' },
+  { coordinates: { lat: 48.8606, lng: 2.3376 }, activity: 'Musée du Louvre',    location: 'Rue de Rivoli',         day: 1, time: '15:00', type: 'passeio'     },
+  { coordinates: { lat: 48.8544, lng: 2.3344 }, activity: 'Le Comptoir',        location: 'Saint-Germain',         day: 1, time: '20:00', type: 'restaurante' },
+  { coordinates: { lat: 48.8566, lng: 2.3522 }, activity: 'Marais District',    location: 'Le Marais',             day: 2, time: '10:00', type: 'passeio'     },
+  { coordinates: { lat: 48.8607, lng: 2.3521 }, activity: 'Centre Pompidou',    location: 'Beaubourg',             day: 2, time: '14:00', type: 'passeio'     },
+  { coordinates: { lat: 48.8631, lng: 2.3620 }, activity: 'Rue de Bretagne',    location: 'Haut-Marais',           day: 2, time: '19:00', type: 'restaurante' },
+  { coordinates: { lat: 48.8049, lng: 2.1203 }, activity: 'Versalhes',          location: 'Versailles',            day: 3, time: '09:30', type: 'passeio'     },
+  { coordinates: { lat: 48.8530, lng: 2.3319 }, activity: 'Brasserie Lipp',     location: 'Saint-Germain',         day: 3, time: '20:30', type: 'restaurante' },
+  { coordinates: { lat: 48.8867, lng: 2.3431 }, activity: 'Montmartre',         location: '18ème arrondissement',  day: 4, time: '10:00', type: 'passeio'     },
+  { coordinates: { lat: 48.8870, lng: 2.3435 }, activity: 'Sacré-Cœur',        location: 'Montmartre',            day: 4, time: '13:30', type: 'passeio'     },
+  { coordinates: { lat: 48.8738, lng: 2.3318 }, activity: 'Galeries Lafayette', location: 'Opéra',                 day: 4, time: '16:00', type: 'passeio'     },
 ];
 
 export default function DashboardPage() {
   const router = useRouter();
   const { tripData } = useTrip();
   const [openDay, setOpenDay] = useState(0);
-  const [selectedPin, setSelectedPin] = useState<number | null>(null);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
-  const [pinsVisible, setPinsVisible] = useState(false);
   const [chartVisible, setChartVisible] = useState(false);
   const chartRef = useRef<HTMLDivElement>(null);
 
@@ -90,10 +94,9 @@ export default function DashboardPage() {
   const checkOut = tripData?.checkOut ? formatDateBR(tripData.checkOut) : '22 Jun';
 
   useEffect(() => {
-    const t = setTimeout(() => setPinsVisible(true), 400);
     const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setChartVisible(true); }, { threshold: 0.3 });
     if (chartRef.current) obs.observe(chartRef.current);
-    return () => { clearTimeout(t); obs.disconnect(); };
+    return () => obs.disconnect();
   }, []);
 
   return (
@@ -148,7 +151,10 @@ export default function DashboardPage() {
 
         {/* COL 2: Map */}
         <div style={{ position: 'relative', background: '#0e1f2c', overflow: 'hidden' }}>
-          <DarkMap pins={PINS} visible={pinsVisible} selected={selectedPin} onSelect={setSelectedPin} />
+          <LeafletMap
+            pins={MAP_PINS}
+            activeDay={openDay >= 0 ? DAYS[openDay].day : undefined}
+          />
         </div>
 
         {/* COL 3: Cost Panel */}
@@ -250,85 +256,6 @@ function DayAccordion({ day, open, onToggle, onSelectActivity }: {
           ))}
         </div>
       )}
-    </div>
-  );
-}
-
-function DarkMap({ pins, visible, selected, onSelect }: {
-  pins: Pin[];
-  visible: boolean;
-  selected: number | null;
-  onSelect: (i: number | null) => void;
-}) {
-  return (
-    <div style={{ width: '100%', height: '100%', position: 'relative' }}>
-      <svg width="100%" height="100%" viewBox="0 0 600 500" style={{ position: 'absolute', inset: 0 }}>
-        <defs>
-          <radialGradient id="mapGrad" cx="45%" cy="45%" r="55%">
-            <stop offset="0%"   stopColor="#1e3a4a" />
-            <stop offset="100%" stopColor="#0e1f2c" />
-          </radialGradient>
-          <filter id="glow">
-            <feGaussianBlur stdDeviation="3" result="b" />
-            <feComposite in="SourceGraphic" in2="b" operator="over" />
-          </filter>
-        </defs>
-        <rect width="600" height="500" fill="url(#mapGrad)" />
-
-        {[60,100,140,180,220,260,300,340,380,420,460,500,540].map(x => (
-          <line key={x} x1={x} y1="0" x2={x + 20} y2="500" stroke="#1e3245" strokeWidth="1" />
-        ))}
-        {[50,90,130,170,210,250,290,330,370,410,450].map(y => (
-          <line key={y} x1="0" y1={y} x2="600" y2={y + 10} stroke="#1e3245" strokeWidth="1" />
-        ))}
-
-        <path d="M0 180 Q150 170 300 185 Q450 200 600 175" stroke="#1e3a4a" strokeWidth="7" fill="none" />
-        <path d="M0 280 Q200 270 350 290 Q500 310 600 280" stroke="#1e3a4a" strokeWidth="7" fill="none" />
-        <path d="M180 0 Q190 120 185 250 Q180 380 190 500" stroke="#1e3a4a" strokeWidth="7" fill="none" />
-        <path d="M380 0 Q370 150 375 280 Q380 400 370 500" stroke="#1e3a4a" strokeWidth="7" fill="none" />
-
-        <path d="M0 320 Q100 300 200 290 Q300 280 400 260 Q500 240 600 220" stroke="#0d1a24" strokeWidth="28" fill="none" />
-        <path d="M0 320 Q100 300 200 290 Q300 280 400 260 Q500 240 600 220" stroke="#162430" strokeWidth="16" fill="none" />
-        <path d="M0 320 Q100 300 200 290 Q300 280 400 260 Q500 240 600 220" stroke="rgba(48,112,130,0.45)" strokeWidth="2" fill="none" />
-
-        <path
-          d={`M${pins[0].x} ${pins[0].y} Q${(pins[0].x+pins[1].x)/2} ${pins[0].y-30} ${pins[1].x} ${pins[1].y} Q${(pins[1].x+pins[2].x)/2} ${(pins[1].y+pins[2].y)/2-20} ${pins[2].x} ${pins[2].y} Q${(pins[2].x+pins[3].x)/2} ${pins[2].y+15} ${pins[3].x} ${pins[3].y} L${pins[4].x} ${pins[4].y}`}
-          stroke="var(--gold)" strokeWidth="1.5" fill="none" strokeDasharray="6 4" opacity="0.6"
-          style={{ strokeDashoffset: visible ? 0 : 1000, transition: 'stroke-dashoffset 1.8s ease 0.3s' }}
-        />
-
-        {pins.map((p, i) => (
-          <g
-            key={i}
-            style={{ cursor: 'pointer', animation: visible ? `bounce 0.5s ease ${i * 0.12 + 0.2}s both` : 'none' }}
-            onClick={() => onSelect(selected === i ? null : i)}
-          >
-            <circle cx={p.x} cy={p.y} r={selected === i ? 22 : 18} fill="rgba(234,153,64,0.12)" />
-            <circle cx={p.x} cy={p.y} r={11} fill={selected === i ? 'var(--gold)' : '#EA9940'} filter={selected === i ? 'url(#glow)' : undefined} />
-            <text x={p.x} y={p.y + 4} textAnchor="middle" fill="#12212E" fontSize="9" fontFamily="DM Mono" fontWeight="700">{p.label}</text>
-          </g>
-        ))}
-
-        {selected !== null && (() => {
-          const p = pins[selected];
-          const rx = Math.min(p.x + 20, 520);
-          const ry = Math.max(p.y - 60, 10);
-          return (
-            <g>
-              <rect x={rx} y={ry} width={160} height={44} rx="5" fill="#1a2d3a" stroke="rgba(234,153,64,0.3)" strokeWidth="1" />
-              <text x={rx + 10} y={ry + 16} fill="var(--text)" fontSize="11" fontFamily="DM Sans" fontWeight="600">{p.name}</text>
-              <text x={rx + 10} y={ry + 32} fill="var(--text-muted)" fontSize="10" fontFamily="DM Mono">Pin #{p.label}</text>
-            </g>
-          );
-        })()}
-      </svg>
-
-      <div style={{ position: 'absolute', bottom: 16, left: 16, fontSize: 11, fontFamily: 'var(--ff-mono)', color: 'var(--text-dim)', letterSpacing: '0.06em' }}>
-        PARIS · ILE-DE-FRANCE
-      </div>
-      <div style={{ position: 'absolute', top: 16, right: 16, background: 'rgba(22,24,32,0.8)', border: '1px solid var(--border-light)', borderRadius: 4, padding: '6px 10px', fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--ff-mono)' }}>
-        {pins.length} pontos · {(DAYS.length * 1.4).toFixed(1)} km
-      </div>
     </div>
   );
 }

@@ -36,6 +36,17 @@ export interface ItineraryDay {
   activities: Activity[];
 }
 
+export type MapPinType = 'passeio' | 'restaurante' | 'hospedagem' | 'transporte';
+
+export interface MapPin {
+  coordinates: { lat: number; lng: number };
+  activity: string;
+  location: string;
+  day: number;
+  time: string;
+  type: MapPinType;
+}
+
 export interface SavedTrip {
   id: number;
   dest: string;
