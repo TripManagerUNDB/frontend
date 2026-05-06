@@ -28,12 +28,18 @@ export function Navbar() {
         <Link href="/profile" className={getLinkClass("/profile")}>
           Minhas viagens
         </Link>
-        <Link
-          href="/wizard"
+        <button
+          onClick={() => {
+            localStorage.removeItem('currentTripId');
+            localStorage.removeItem('currentTripDest');
+            localStorage.removeItem('currentTripCheckIn');
+            localStorage.removeItem('currentTripCheckOut');
+            window.location.href = '/wizard';
+          }}
           className="btn-primary px-4 md:px-5 py-[9px] text-[13px] whitespace-nowrap"
         >
           Planejar agora
-        </Link>
+        </button>
       </div>
     </nav>
   );
