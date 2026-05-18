@@ -95,7 +95,7 @@ export default function WizardPage() {
           const auth = await login('lucas@email.com', '123456');
           saveAuth(auth);
         } catch {
-          router.push('/login');
+          router.push('/wizard');
           return;
         }
       }
