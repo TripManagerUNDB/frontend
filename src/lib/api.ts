@@ -212,3 +212,7 @@ export function getUserInfo() {
         plan: localStorage.getItem('userPlan') || 'FREE',
     };
 }
+
+export async function updateTripStatus(id: string, status: string): Promise<TripResponse> {
+    return request(`/trips/${id}/status?status=${status}`, { method: 'PATCH' });
+}

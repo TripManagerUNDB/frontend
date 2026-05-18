@@ -3,11 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ContourBg } from '@/components/ui/ContourBg';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
 import { StatItem } from '@/components/ui/StatItem';
 import { PlanFeature } from '@/components/ui/PlanFeature';
-import { listTrips, getUserInfo, clearAuth } from '@/lib/api';
+import { listTrips, getUserInfo, clearAuth, updateTripStatus } from '@/lib/api';
 import type { TripResponse } from '@/lib/api';
 
 const PLAN_FEATURES = {
@@ -45,6 +43,17 @@ export default function ProfilePage() {
   const handleLogout = () => {
     clearAuth();
     router.push('/');
+  };
+
+  const handleToggleStatus = async (e: React.MouseEvent, trip: TripResponse) => {
+    e.stopPropagation();
+    const newStatus = trip.status === 'PLANEJADA' ? 'CONCLUIDA' : 'PLANEJADA';
+    try {
+      const updated = await updateTripStatus(trip.id, newStatus);
+      setTrips(prev => prev.map(t => t.id === trip.id ? updated : t));
+    } catch {
+      // silencia erro
+    }
   };
 
   return (
@@ -156,11 +165,11 @@ export default function ProfilePage() {
                     <div style={{ padding: '14px 16px' }}>
                       <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{trip.destination}</div>
                       <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 12 }}>{formatDates(trip)}</div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                         <span style={{
                           fontSize: 10, padding: '3px 10px', borderRadius: 100,
-                          background: trip.status === 'PLANEJADA' ? 'rgba(200,169,110,0.1)' : 'rgba(48,112,130,0.1)',
-                          color: trip.status === 'PLANEJADA' ? 'var(--gold)' : 'var(--blue)',
+                          background: trip.status === 'PLANEJADA' ? 'rgba(200,169,110,0.1)' : 'rgba(76,175,80,0.1)',
+                          color: trip.status === 'PLANEJADA' ? 'var(--gold)' : '#4caf50',
                           border: `1px solid ${trip.status === 'PLANEJADA' ? 'rgba(200,169,110,0.2)' : 'rgba(48,112,130,0.2)'}`,
                         }}>
                           {trip.status === 'PLANEJADA' ? 'Planejada' : 'Concluída'}
@@ -169,6 +178,29 @@ export default function ProfilePage() {
                           {trip.days} dias
                         </span>
                       </div>
+                      <button
+                        onClick={e => handleToggleStatus(e, trip)}
+                        onMouseEnter={e => {
+                          if (trip.status === 'PLANEJADA') {
+                            e.currentTarget.style.background = 'rgba(76,175,80,0.15)';
+                            e.currentTarget.style.borderColor = 'rgba(76,175,80,0.6)';
+                            e.currentTarget.style.color = '#4caf50';
+                          }
+                        }}
+                        onMouseLeave={e => {
+                          e.currentTarget.style.background = trip.status === 'PLANEJADA' ? 'rgba(48,112,130,0.08)' : 'rgba(200,169,110,0.08)';
+                          e.currentTarget.style.borderColor = trip.status === 'PLANEJADA' ? 'rgba(48,112,130,0.4)' : 'rgba(200,169,110,0.4)';
+                          e.currentTarget.style.color = trip.status === 'PLANEJADA' ? 'var(--blue)' : 'var(--gold)';
+                        }}
+                        style={{
+                          width: '100%', padding: '6px 0', borderRadius: 6, fontSize: 11, cursor: 'pointer',
+                          border: trip.status === 'PLANEJADA' ? '1px solid rgba(48,112,130,0.4)' : '1px solid rgba(200,169,110,0.4)',
+                          background: trip.status === 'PLANEJADA' ? 'rgba(48,112,130,0.08)' : 'rgba(200,169,110,0.08)',
+                          color: trip.status === 'PLANEJADA' ? 'var(--blue)' : 'var(--gold)',
+                        }}
+                      >
+                        {trip.status === 'PLANEJADA' ? '✓ Marcar como concluída' : '↩ Marcar como planejada'}
+                      </button>
                     </div>
                   </div>
                 ))}
