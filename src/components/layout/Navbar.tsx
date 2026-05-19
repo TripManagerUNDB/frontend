@@ -1,16 +1,30 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Logo } from "@/components/ui/Logo";
+import { isLoggedIn, getUserInfo, clearAuth } from "@/lib/api";
 
 export function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [userName, setUserName] = useState('');
+
+  useEffect(() => {
+    setLoggedIn(isLoggedIn());
+    setUserName(getUserInfo().name);
+  }, [pathname]);
 
   const getLinkClass = (path: string) => {
     const isActive = pathname === path;
     return `btn-ghost ${isActive ? "text-gold font-semibold" : "text-foreground/80"}`;
+  };
+
+  const handleLogout = () => {
+    clearAuth();
+    router.push('/login');
   };
 
   return (
@@ -25,21 +39,48 @@ export function Navbar() {
         <Link href="/" className={getLinkClass("/")}>
           Home
         </Link>
-        <Link href="/profile" className={getLinkClass("/profile")}>
-          Minhas viagens
-        </Link>
-        <button
-          onClick={() => {
-            localStorage.removeItem('currentTripId');
-            localStorage.removeItem('currentTripDest');
-            localStorage.removeItem('currentTripCheckIn');
-            localStorage.removeItem('currentTripCheckOut');
-            window.location.href = '/wizard';
-          }}
-          className="btn-primary px-4 md:px-5 py-[9px] text-[13px] whitespace-nowrap"
-        >
-          Planejar agora
-        </button>
+
+        {loggedIn ? (
+          <>
+            <Link href="/profile" className={getLinkClass("/profile")}>
+              Minhas viagens
+            </Link>
+            <Link href="/profile" className="btn-ghost text-[13px] flex items-center gap-1.5">
+              <span style={{ fontSize: 14 }}>👤</span>
+              {userName}
+            </Link>
+            <button
+              onClick={() => {
+                localStorage.removeItem('currentTripId');
+                localStorage.removeItem('currentTripDest');
+                localStorage.removeItem('currentTripCheckIn');
+                localStorage.removeItem('currentTripCheckOut');
+                window.location.href = '/wizard';
+              }}
+              className="btn-primary px-4 md:px-5 py-[9px] text-[13px] whitespace-nowrap"
+            >
+              Planejar agora
+            </button>
+          </>
+        ) : (
+          <>
+            <Link href="/login" className="btn-ghost text-[13px] whitespace-nowrap">
+              Entrar
+            </Link>
+            <button
+              onClick={() => {
+                localStorage.removeItem('currentTripId');
+                localStorage.removeItem('currentTripDest');
+                localStorage.removeItem('currentTripCheckIn');
+                localStorage.removeItem('currentTripCheckOut');
+                window.location.href = '/wizard';
+              }}
+              className="btn-primary px-4 md:px-5 py-[9px] text-[13px] whitespace-nowrap"
+            >
+              Planejar agora
+            </button>
+          </>
+        )}
       </div>
     </nav>
   );

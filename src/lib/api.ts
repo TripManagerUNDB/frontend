@@ -11,9 +11,42 @@ function getToken(): string | null {
     return localStorage.getItem('accessToken');
 }
 
+function getRefreshToken(): string | null {
+    if (typeof window === 'undefined') return null;
+    return localStorage.getItem('refreshToken');
+}
+
+async function refreshAccessToken(): Promise<string | null> {
+    const refreshToken = getRefreshToken();
+    if (!refreshToken) return null;
+
+    try {
+        const res = await fetch(API_URL + '/auth/refresh', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refreshToken }),
+        });
+
+        if (!res.ok) {
+            clearAuth();
+            if (typeof window !== 'undefined') window.location.href = '/login';
+            return null;
+        }
+
+        const data: AuthResponse = await res.json();
+        saveAuth(data);
+        return data.accessToken;
+    } catch {
+        clearAuth();
+        if (typeof window !== 'undefined') window.location.href = '/login';
+        return null;
+    }
+}
+
 async function request<T>(
     path: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
+    retry = true
 ): Promise<T> {
     const token = getToken();
     const res = await fetch(API_URL + path, {
@@ -25,12 +58,22 @@ async function request<T>(
         },
     });
 
+    if (res.status === 401 || res.status === 403) {
+        if (retry) {
+            const newToken = await refreshAccessToken();
+            if (newToken) {
+                return request<T>(path, options, false);
+            }
+        }
+        const err = await res.json().catch(() => ({ detail: res.statusText }));
+        throw new Error(err.detail || `Erro ${res.status}`);
+    }
+
     if (!res.ok) {
         const err = await res.json().catch(() => ({ detail: res.statusText }));
         throw new Error(err.detail || `Erro ${res.status}`);
     }
 
-    // 204 No Content
     if (res.status === 204) return undefined as T;
     return res.json();
 }
@@ -215,4 +258,8 @@ export function getUserInfo() {
 
 export async function updateTripStatus(id: string, status: string): Promise<TripResponse> {
     return request(`/trips/${id}/status?status=${status}`, { method: 'PATCH' });
+}
+
+export async function validateDestination(destination: string): Promise<{ valid: boolean; message: string; formatted_address?: string }> {
+    return request(`/trips/validate-destination?destination=${encodeURIComponent(destination)}`);
 }

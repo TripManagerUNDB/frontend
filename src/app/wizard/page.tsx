@@ -9,7 +9,7 @@ import { StepHeading } from '@/components/ui/StepHeading';
 import { InfoBox } from '@/components/ui/InfoBox';
 import { FormField } from '@/components/ui/FormField';
 import { INTEREST_ICONS } from '@/lib/icons';
-import { createTrip, generateItinerary, isLoggedIn, saveAuth, login } from '@/lib/api';
+import { createTrip, generateItinerary, isLoggedIn, saveAuth, login, validateDestination } from '@/lib/api';
 import type { InterestId, BudgetLevel } from '@/types/trip';
 
 const STEPS = ['Destino', 'Datas', 'Orçamento', 'Estilo'];
@@ -67,7 +67,26 @@ export default function WizardPage() {
   const updateForm = (patch: Partial<FormState>) =>
     setForm(f => ({ ...f, ...patch }));
 
-  const goNext = () => {
+  const goNext = async () => {
+    if (step === 0) {
+      setLoading(true);
+      setError('');
+      try {
+        const result = await validateDestination(form.destination);
+        if (!result.valid) {
+          setError(result.message);
+          setLoading(false);
+          return;
+        }
+        if (result.formatted_address) {
+          updateForm({ destination: result.formatted_address, destInput: result.formatted_address });
+        }
+      } catch {
+        // serviço indisponível — deixa passar
+      }
+      setLoading(false);
+    }
+
     if (step < 3) {
       setDirection(1);
       setAnimKey(k => k + 1);
@@ -91,13 +110,8 @@ export default function WizardPage() {
 
     try {
       if (!isLoggedIn()) {
-        try {
-          const auth = await login('lucas@email.com', '123456');
-          saveAuth(auth);
-        } catch {
-          router.push('/wizard');
-          return;
-        }
+        router.push('/login');
+        return;
       }
 
       const trip = await createTrip({

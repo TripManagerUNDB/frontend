@@ -8,12 +8,17 @@ import { StatItem } from "@/components/ui/StatItem";
 import { StepCard } from "@/components/ui/StepCard";
 import { TestimonialCard } from "@/components/ui/TestimonialCard";
 import { SectionLabel } from "@/components/ui/SectionLabel";
+import { isLoggedIn, getUserInfo } from "@/lib/api";
 
 export default function Home() {
   const [visible, setVisible] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [userName, setUserName] = useState('');
 
   useEffect(() => {
     const timer = setTimeout(() => setVisible(true), 80);
+    setLoggedIn(isLoggedIn());
+    setUserName(getUserInfo().name);
     return () => clearTimeout(timer);
   }, []);
 
@@ -55,27 +60,10 @@ export default function Home() {
               real, para qualquer destino do mundo.
             </p>
 
-            <div
-              className={`flex gap-4 items-center flex-wrap transition-all duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-7"} delay-500`}
-            >
-              <Link
-                href="/wizard"
-                className="btn-primary text-[15px] px-9 py-3.5"
-              >
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  className="mr-1"
-                >
-                  <path
-                    d="M2 8h12M9 4l5 4-5 4"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
+            <div className={`flex gap-4 items-center flex-wrap transition-all duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-7"} delay-500`}>
+              <Link href="/wizard" className="btn-primary text-[15px] px-9 py-3.5">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="mr-1">
+                  <path d="M2 8h12M9 4l5 4-5 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
                 Planejar agora
               </Link>
@@ -114,9 +102,9 @@ export default function Home() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[
-            { num: "01", title: "Descreva sua viagem",  body: "Informe destino, datas, orçamento e estilo. O processo leva menos de dois minutos." },
-            { num: "02", title: "A IA planeja tudo",    body: "Algoritmos analisam milhares de opções e criam um roteiro otimizado por hora, custo e distância." },
-            { num: "03", title: "Explore e ajuste",     body: "Visualize no mapa, reordene atividades e reserve passagens — tudo em um só lugar." },
+            { num: "01", title: "Descreva sua viagem", body: "Informe destino, datas, orçamento e estilo. O processo leva menos de dois minutos." },
+            { num: "02", title: "A IA planeja tudo", body: "Algoritmos analisam milhares de opções e criam um roteiro otimizado por hora, custo e distância." },
+            { num: "03", title: "Explore e ajuste", body: "Visualize no mapa, reordene atividades e reserve passagens — tudo em um só lugar." },
           ].map((s) => (
             <StepCard key={s.num} num={s.num} title={s.title} body={s.body} />
           ))}
@@ -135,9 +123,9 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {[
-              { name: "Ana Lima",    role: "Designer, São Paulo",       dest: "Tóquio, Japão", text: "Planejei 10 dias no Japão em 3 minutos. O roteiro foi preciso, cultural e dentro do orçamento. Impressionante." },
-              { name: "Rafael Moura", role: "Fotógrafo, Rio de Janeiro", dest: "Marrocos",      text: "A IA entendeu exatamente o que eu queria: trilhas, pôr do sol e gastronomia local. Não esqueci um único dia." },
-              { name: "Carla Souza", role: "Engenheira, Curitiba",      dest: "Islândia",      text: "Viagem em casal, 7 dias na Islândia. O dashboard de custos foi perfeito para não extrapolar o orçamento." },
+              { name: "Ana Lima", role: "Designer, São Paulo", dest: "Tóquio, Japão", text: "Planejei 10 dias no Japão em 3 minutos. O roteiro foi preciso, cultural e dentro do orçamento. Impressionante." },
+              { name: "Rafael Moura", role: "Fotógrafo, Rio de Janeiro", dest: "Marrocos", text: "A IA entendeu exatamente o que eu queria: trilhas, pôr do sol e gastronomia local. Não esqueci um único dia." },
+              { name: "Carla Souza", role: "Engenheira, Curitiba", dest: "Islândia", text: "Viagem em casal, 7 dias na Islândia. O dashboard de custos foi perfeito para não extrapolar o orçamento." },
             ].map((t) => (
               <TestimonialCard key={t.name} name={t.name} role={t.role} dest={t.dest} text={t.text} />
             ))}
@@ -153,11 +141,31 @@ export default function Home() {
             Pronto para explorar?
           </h2>
           <p className="text-muted text-[17px] mb-10 max-w-[440px] mx-auto">
-            Crie seu primeiro roteiro gratuitamente. Sem cartão de crédito.
+            {loggedIn
+              ? `Bem-vindo de volta, ${userName}! Veja suas viagens ou planeje uma nova.`
+              : 'Crie seu primeiro roteiro gratuitamente. Sem cartão de crédito.'}
           </p>
-          <Link href="/wizard" className="btn-primary text-[16px] px-11 py-4">
-            Começar agora
-          </Link>
+          <div className="flex gap-4 justify-center flex-wrap">
+            {loggedIn ? (
+              <>
+                <Link href="/profile" className="btn-primary text-[16px] px-11 py-4">
+                  Ver minhas viagens
+                </Link>
+                <Link href="/wizard" className="btn-ghost text-[16px] px-8 py-4">
+                  Novo roteiro
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link href="/wizard" className="btn-primary text-[16px] px-11 py-4">
+                  Começar agora
+                </Link>
+                <Link href="/login" className="btn-ghost text-[16px] px-8 py-4">
+                  Entrar
+                </Link>
+              </>
+            )}
+          </div>
         </div>
       </section>
 
@@ -169,10 +177,7 @@ export default function Home() {
         </div>
         <div className="flex gap-7">
           {["Sobre", "Privacidade", "Termos", "Contato"].map((l) => (
-            <span
-              key={l}
-              className="text-[13px] text-dim cursor-pointer transition-colors hover:text-muted"
-            >
+            <span key={l} className="text-[13px] text-dim cursor-pointer transition-colors hover:text-muted">
               {l}
             </span>
           ))}
@@ -191,12 +196,8 @@ function HeroMockup() {
         {/* Top bar */}
         <div className="px-[18px] py-[14px] border-b border-white/5 flex justify-between items-center">
           <div>
-            <div className="font-display text-[15px] text-foreground font-medium">
-              Paris, França
-            </div>
-            <div className="text-[11px] text-muted font-mono mt-0.5">
-              15–22 Jun · 7 dias
-            </div>
+            <div className="font-display text-[15px] text-foreground font-medium">Paris, França</div>
+            <div className="text-[11px] text-muted font-mono mt-0.5">15–22 Jun · 7 dias</div>
           </div>
           <div className="bg-gold-dim border border-gold/30 rounded px-2.5 py-1 text-[11px] text-gold font-mono">
             R$ 8.400
@@ -212,55 +213,16 @@ function HeroMockup() {
               </radialGradient>
             </defs>
             <rect width="420" height="160" fill="url(#hm1)" />
-            <path
-              d="M60 80 Q120 60 200 80 Q280 100 360 75"
-              stroke="#1E2535"
-              strokeWidth="8"
-              fill="none"
-            />
-            <path
-              d="M0 50 Q100 55 210 45 Q320 35 420 50"
-              stroke="#1E2535"
-              strokeWidth="6"
-              fill="none"
-            />
-            <path
-              d="M150 0 Q145 80 155 160"
-              stroke="#1E2535"
-              strokeWidth="5"
-              fill="none"
-            />
-            <path
-              d="M280 0 Q275 80 285 160"
-              stroke="#1E2535"
-              strokeWidth="5"
-              fill="none"
-            />
-            <path
-              d="M80 90 Q140 60 200 75 Q260 90 330 65"
-              stroke="#C8A96E"
-              strokeWidth="1.5"
-              fill="none"
-              strokeDasharray="4 3"
-              opacity="0.7"
-            />
-            {[
-              [80, 90],
-              [200, 75],
-              [330, 65],
-            ].map(([x, y], i) => (
+            <path d="M60 80 Q120 60 200 80 Q280 100 360 75" stroke="#1E2535" strokeWidth="8" fill="none" />
+            <path d="M0 50 Q100 55 210 45 Q320 35 420 50" stroke="#1E2535" strokeWidth="6" fill="none" />
+            <path d="M150 0 Q145 80 155 160" stroke="#1E2535" strokeWidth="5" fill="none" />
+            <path d="M280 0 Q275 80 285 160" stroke="#1E2535" strokeWidth="5" fill="none" />
+            <path d="M80 90 Q140 60 200 75 Q260 90 330 65" stroke="#C8A96E" strokeWidth="1.5" fill="none" strokeDasharray="4 3" opacity="0.7" />
+            {[[80, 90], [200, 75], [330, 65]].map(([x, y], i) => (
               <g key={i}>
                 <circle cx={x} cy={y} r={14} fill="rgba(234,153,64,0.1)" />
                 <circle cx={x} cy={y} r={8} fill="#EA9940" />
-                <text
-                  x={x}
-                  y={y + 4}
-                  textAnchor="middle"
-                  fill="#12212E"
-                  fontSize="8"
-                  fontFamily="DM Mono"
-                  fontWeight="600"
-                >
+                <text x={x} y={y + 4} textAnchor="middle" fill="#12212E" fontSize="8" fontFamily="DM Mono" fontWeight="600">
                   {i + 1}
                 </text>
               </g>
@@ -273,13 +235,8 @@ function HeroMockup() {
           ["12:00", "Café de Flore", "☕", "R$ 80"],
           ["15:00", "Musée du Louvre", "🎨", "R$ 90"],
         ].map(([t, name, ic, cost]) => (
-          <div
-            key={name}
-            className="flex items-center gap-3 px-[18px] py-2.5 border-b border-white/5 last:border-0"
-          >
-            <span className="font-mono text-[10px] text-muted min-w-[38px]">
-              {t}
-            </span>
+          <div key={name} className="flex items-center gap-3 px-[18px] py-2.5 border-b border-white/5 last:border-0">
+            <span className="font-mono text-[10px] text-muted min-w-[38px]">{t}</span>
             <span className="text-sm">{ic}</span>
             <span className="text-[12px] text-foreground flex-1">{name}</span>
             <span className="font-mono text-[10px] text-gold">{cost}</span>
