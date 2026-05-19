@@ -141,7 +141,11 @@ export default function WizardPage() {
 
   const canProceed = () => {
     if (step === 0) return form.destination.length > 0;
-    if (step === 1) return !!(form.checkIn && form.checkOut);
+    if (step === 1) {
+      if (!form.checkIn || !form.checkOut) return false;
+      const days = Math.round((new Date(form.checkOut).getTime() - new Date(form.checkIn).getTime()) / 86400000);
+      return days > 0 && days <= 10;
+    }
     if (step === 2) return true;
     if (step === 3) return form.interests.length > 0;
     return true;
@@ -323,7 +327,7 @@ function Step2({ form, updateForm }: { form: FormState; updateForm: (p: Partial<
       <StepHeading title="Quando você vai viajar?" subtitle="Escolha as datas de ida e volta." />
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginTop: 28 }}>
         <FormField label="Ida">
-          <input type="date" className="inp" value={form.checkIn} onChange={e => updateForm({ checkIn: e.target.value })} style={{ colorScheme: 'dark' }} />
+          <input type="date" className="inp" value={form.checkIn} min={new Date().toISOString().split('T')[0]} onChange={e => updateForm({ checkIn: e.target.value, checkOut: '' })} style={{ colorScheme: 'dark' }} />
         </FormField>
         <FormField label="Volta">
           <input type="date" className="inp" value={form.checkOut} min={form.checkIn} onChange={e => updateForm({ checkOut: e.target.value })} style={{ colorScheme: 'dark' }} />
@@ -334,6 +338,11 @@ function Step2({ form, updateForm }: { form: FormState; updateForm: (p: Partial<
           <span style={{ fontFamily: 'var(--ff-mono)', fontSize: 28, color: 'var(--blue)' }}>{days}</span>
           <span style={{ fontSize: 14, color: 'var(--text-muted)', display: 'block', marginTop: 4 }}>dias de viagem</span>
         </InfoBox>
+      )}
+      {days > 10 && (
+        <div style={{ marginTop: 12, padding: '10px 14px', background: 'rgba(220,53,69,0.1)', border: '1px solid rgba(220,53,69,0.3)', borderRadius: 6, color: '#ff6b6b', fontSize: 13 }}>
+          Máximo de 10 dias por roteiro. Ajuste a data de volta.
+        </div>
       )}
     </div>
   );
