@@ -8,6 +8,7 @@ import { InfoBox } from '@/components/ui/InfoBox';
 import { ACTIVITY_TYPE_ICONS } from '@/lib/icons';
 import { getItinerary, getCosts, getTip } from '@/lib/api';
 import type { ItineraryDayResponse, CostItem } from '@/lib/api';
+import type { MapPin, MapPinType } from '@/types/trip';
 
 const LeafletMap = dynamic(
   () => import('@/components/ui/LeafletMap').then(m => m.LeafletMap),
@@ -74,9 +75,9 @@ export default function DashboardPage() {
   const totalCost = (d: ItineraryDayResponse) =>
     d.activities.reduce((sum, a) => sum + a.cost, 0);
 
-  const currentDayPins = (days[openDay]?.mapPins ?? []).filter(
-    (p): p is typeof p & { coordinates: { lat: number; lng: number } } => !!p.coordinates
-  );
+  const currentDayPins: MapPin[] = (days[openDay]?.mapPins ?? [])
+    .filter(p => !!p.coordinates)
+    .map(p => ({ ...p, coordinates: p.coordinates!, type: p.type as MapPinType }));
 
   return (
     <div style={{ minHeight: 'calc(100vh - 64px)' }}>
