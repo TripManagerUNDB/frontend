@@ -200,7 +200,7 @@ export default function ProfilePage() {
                   {plan === 'free' ? 'R$ 0/mês' : 'R$ 29/mês'}
                 </div>
                 {PLAN_FEATURES[plan].map(f => (
-                  <PlanFeature key={f} active={plan === 'premium'}>{f}</PlanFeature>
+                  <PlanFeature key={f} highlighted={plan === 'premium'}>{f}</PlanFeature>
                 ))}
                 {plan === 'premium' && (
                   <button className="btn-primary" style={{ width: '100%', marginTop: 20, textAlign: 'center' }}>Assinar Premium</button>
