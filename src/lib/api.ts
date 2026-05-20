@@ -249,6 +249,7 @@ export function isLoggedIn(): boolean {
 }
 
 export function getUserInfo() {
+    if (typeof window === 'undefined') return { name: '', email: '', plan: 'FREE' };
     return {
         name: localStorage.getItem('userName') || '',
         email: localStorage.getItem('userEmail') || '',
