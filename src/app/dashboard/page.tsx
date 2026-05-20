@@ -74,7 +74,9 @@ export default function DashboardPage() {
   const totalCost = (d: ItineraryDayResponse) =>
     d.activities.reduce((sum, a) => sum + a.cost, 0);
 
-  const currentDayPins = days[openDay]?.mapPins ?? [];
+  const currentDayPins = (days[openDay]?.mapPins ?? []).filter(
+    (p): p is typeof p & { coordinates: { lat: number; lng: number } } => !!p.coordinates
+  );
 
   return (
     <div style={{ minHeight: 'calc(100vh - 64px)' }}>
